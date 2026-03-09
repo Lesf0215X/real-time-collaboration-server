@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Socket Test</title>
+</head>
+<body>
+
+<h2>Socket.IO Test</h2>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script>
+
+const socket = io("http://localhost:4000", {
+  auth: {
+    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NzMwODI3NDIsImV4cCI6MTc3MzA4MzY0Mn0.FsV_22CybsM9lrJfrhJHvy98mSIFPq07a4qimSw6c28"
+  }
+})
+
+// conexión establecida
+socket.on("connect", () => {
+
+  console.log("Connected:", socket.id)
+
+  // unirse a la room
+  socket.emit("join_room", "room1")
+
+})
+
+// error de autenticación
+socket.on("connect_error", (err) => {
+  console.log("Connection error:", err.message)
+})
+
+// usuario se unió
+socket.on("user_joined", (data) => {
+  console.log("User joined:", data)
+})
+
+// recibir mensaje
+socket.on("receive_message", (data) => {
+  console.log("Message received:", data)
+})
+
+// usuario salió
+socket.on("user_left", (data) => {
+  console.log("User left:", data)
+})
+
+// desconexión
+socket.on("disconnect", () => {
+  console.log("Disconnected from server")
+})
+
+socket.on("room_history", (messages) => {
+  console.log("Room history:", messages)
+})
+
+socket.on("user_typing", (data) => {
+  console.log(data.userId + " is typing")
+})
+
+socket.on("notification", (data) => {
+  console.log("Notification:", data)
+})
+
+// enviar mensaje después de 2 segundos
+setTimeout(() => {
+
+  socket.emit("send_message", {
+    room: "room1",
+    message: "Hola mundo"
+  })
+
+}, 2000)
+
+// salir de la room después de 4 segundos
+setTimeout(() => {
+
+  socket.emit("leave_room", "room1")
+
+}, 4000)
+
+</script>
+
+</body>
+</html>
+
+
+
