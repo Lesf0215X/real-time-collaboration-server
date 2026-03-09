@@ -228,9 +228,4 @@ socket.on("notification", (data) => {
 ---
 
 ## Autor
-
-Proyecto desarrollado como parte de un portafolio backend para demostrar conocimientos en:
-
-* sistemas en tiempo real
-* arquitecturas distribuidas
-* escalabilidad backend
+ Luis E. S. F.
