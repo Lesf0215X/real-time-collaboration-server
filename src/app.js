@@ -1,15 +1,12 @@
-import "./config/database.js"
-import express from "express"
-import cors from "cors"
+const express = require("express");
+const cors = require("cors");
 
-
-const app = express()
-
-app.use(cors())
-app.use(express.json())
+const app = express();
+app.use(cors());
+app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Real-time collaboration server running")
-})
+  res.send("Real-Time Collaboration Server is running");
+});
 
-export default app
+module.exports = app;

@@ -1,64 +1,32 @@
-import dotenv from "dotenv"
-dotenv.config()
+const http = require("http");
+const { Server } = require("socket.io");
+const app = require("./app");
+const { socketHandler } = require("./sockets/socketHandler");
+const { socketAuth } = require("./middlewares/auth.middleware");
+const { connectRedis, pubClient, subClient } = require("./config/redis");
 
-import { createAdapter } from "@socket.io/redis-adapter"
-import { pubClient, subClient, connectRedis } from "./config/redis.js"
+const PORT = process.env.PORT || 4000;
 
-import app from "./app.js"
-import { createServer } from "http"
-import { Server } from "socket.io"
+(async () => {
+  try {
+    const httpServer = http.createServer(app);
 
-import { socketHandler } from "./sockets/socketHandler.js"
-import { verifyToken } from "./utils/jwtVerify.js"
+    const io = new Server(httpServer, { cors: { origin: "*" } });
 
-const PORT = process.env.PORT || 4000
+    // Redis adapter
+    await connectRedis();
+    const { createAdapter } = require("@socket.io/redis-adapter");
+    io.adapter(createAdapter(pubClient, subClient));
 
-// crear servidor HTTP usando Express
-const httpServer = createServer(app)
+    io.use(socketAuth);
 
-// crear servidor Socket.IO
-const io = new Server(httpServer, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    io.on("connection", (socket) => {
+      console.log("Socket connected:", socket.id);
+      socketHandler(io, socket);
+    });
+
+    httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  } catch (err) {
+    console.error("Server error:", err);
   }
-})
-await connectRedis()
-
-io.adapter(createAdapter(pubClient, subClient))
-
-// middleware de autenticación para sockets
-io.use((socket, next) => {
-
-  const token = socket.handshake.auth?.token
-
-  if (!token) {
-    return next(new Error("Authentication error"))
-  }
-
-  const user = verifyToken(token)
-
-  if (!user) {
-    return next(new Error("Invalid token"))
-  }
-
-  socket.user = user
-
-  next()
-
-})
-
-// conexión de sockets
-io.on("connection", (socket) => {
-
-  console.log("Socket connected:", socket.id)
-  console.log("User connected:", socket.user.id)
-
-  socketHandler(io, socket)
-
-})
-
-// iniciar servidor
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+})();

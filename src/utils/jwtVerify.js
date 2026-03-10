@@ -1,11 +1,11 @@
-import jwt from "jsonwebtoken"
+const jwt = require("jsonwebtoken");
 
-export const verifyToken = (token) => {
+const verifyToken = (token) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
-    return decoded
-  } catch (error) {
-    console.log("JWT error:", error.message)
-    return null
+    return jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    return null;
   }
-}
+};
+
+module.exports = { verifyToken };

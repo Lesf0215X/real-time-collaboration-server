@@ -1,16 +1,16 @@
-import { createClient } from "redis"
+const { createClient } = require("redis");
 
-export const pubClient = createClient({
-  url: "redis://redis:6379"
-})
+const pubClient = createClient({ url: process.env.REDIS_URL });
+const subClient = pubClient.duplicate();
 
-export const subClient = pubClient.duplicate()
+const connectRedis = async () => {
+  try {
+    await pubClient.connect();
+    await subClient.connect();
+    console.log("Redis connected");
+  } catch (err) {
+    console.error("Redis connection error:", err);
+  }
+};
 
-export const connectRedis = async () => {
-
-  await pubClient.connect()
-  await subClient.connect()
-
-  console.log("Redis connected")
-
-}
+module.exports = { pubClient, subClient, connectRedis };

@@ -1,13 +1,7 @@
-const onlineUsers = new Map()
+const onlineUsers = new Map();
 
-export const addUser = (userId, socketId) => {
-  onlineUsers.set(userId, socketId)
-}
+const addUser = (userId, socketId) => onlineUsers.set(userId, socketId);
+const removeUser = (userId) => onlineUsers.delete(userId);
+const getOnlineUsers = () => Array.from(onlineUsers.keys());
 
-export const removeUser = (userId) => {
-  onlineUsers.delete(userId)
-}
-
-export const getOnlineUsers = () => {
-  return Array.from(onlineUsers.keys())
-}
+module.exports = { addUser, removeUser, getOnlineUsers };

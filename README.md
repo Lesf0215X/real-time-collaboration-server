@@ -1,231 +1,331 @@
-# Real-Time Collaboration Server
+# Servidor de Colaboración en Tiempo Real
 
-Backend para colaboración en tiempo real que soporta **chat, presencia de usuarios, notificaciones y activity events** utilizando WebSockets.
+Servidor backend para aplicaciones de **colaboración en tiempo real**.
 
-El sistema está diseñado con una arquitectura escalable usando **Redis Pub/Sub**, persistencia con **PostgreSQL** y autenticación basada en **JWT**.
+Este proyecto está construido con **Node.js, Express, Socket.IO, PostgreSQL, Redis y Docker**, y permite implementar funcionalidades como mensajería en tiempo real, autenticación con JWT, persistencia de mensajes y monitoreo de usuarios conectados.
 
----
+------------------------------------------------------------
 
-## Características
+# Características
 
-* Autenticación mediante JWT
-* Chat en tiempo real
-* Rooms (canales de conversación)
-* Historial de mensajes
-* Presence system (usuarios online/offline)
-* Typing indicators
-* Notificaciones en vivo
-* Arquitectura escalable con Redis Pub/Sub
-* Persistencia de datos con PostgreSQL
-* Contenerización con Docker
+* Comunicación en tiempo real con Socket.IO
+* Autenticación mediante JSON Web Tokens (JWT)
+* Seguimiento de usuarios conectados (presencia)
+* Mensajería basada en salas
+* Persistencia de mensajes en PostgreSQL
+* Redis Adapter para escalabilidad horizontal
+* Infraestructura con Docker
+* Arquitectura modular lista para producción
 
----
+--------------------------------------------------------------------
 
-## Tecnologías utilizadas
+# Tecnologías utilizadas
 
 * Node.js
 * Express
 * Socket.IO
-* Redis
 * PostgreSQL
+* Redis
 * Docker
-* JWT (JSON Web Tokens)
+* JWT (JSON Web Token)
+
+---------------------------------------------------------
+
+# Estructura del proyecto
+
+```
+real-time-collaboration-server
+│
+├── docker-compose.yml
+├── Dockerfile
+├── package.json
+├── .env
+│
+└── src
+    ├── app.js
+    ├── server.js
+    │
+    ├── config
+    │   ├── database.js
+    │   └── redis.js
+    │
+    ├── middlewares
+    │   └── auth.middleware.js
+    │
+    ├── services
+    │   ├── message.service.js
+    │   └── presence.service.js
+    │
+    ├── sockets
+    │   └── socketHandler.js
+    │
+    └── utils
+        └── jwtVerify.js
+```
 
 ---
 
-## Arquitectura del sistema
+# Variables de entorno
 
-El sistema sigue una arquitectura **event-driven** basada en WebSockets.
+Debes crear un archivo `.env` en la raíz del proyecto.
 
-Client
-↓
-WebSocket Connection
-↓
-Real-Time Server
-↓
-Redis Pub/Sub (para escalabilidad)
-↓
-PostgreSQL (persistencia de mensajes)
+Ejemplo:
 
-### Flujo de eventos
-
-1. Usuario se autentica mediante la Auth API y obtiene un JWT.
-2. El cliente establece conexión WebSocket enviando el token.
-3. El servidor valida el JWT durante el handshake.
-4. El usuario puede:
-
-   * unirse a rooms
-   * enviar mensajes
-   * recibir notificaciones
-5. Los mensajes se guardan en PostgreSQL y se distribuyen en tiempo real.
-
----
-
-## Estructura del proyecto
-
-src
-
-config
-
-* database.js
-* redis.js
-
-services
-
-* message.service.js
-* presence.service.js
-
-sockets
-
-* socketHandler.js
-
-utils
-
-* jwtVerify.js
-
-server.js
-app.js
-
----
-
-## Variables de entorno
-
-Crear un archivo `.env`:
-
+```
 PORT=4000
-JWT_SECRET=your_secret_key
-
-DB_HOST=postgres
+DB_HOST=localhost
+DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_NAME=realtime_chat
-
-REDIS_URL=redis://redis:6379
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=supersecretaccess
+```
 
 ---
 
-## Instalación
+# Instalación
 
-Clonar repositorio:
+Clonar el repositorio:
 
-git clone https://github.com/tuusuario/real-time-collaboration-server.git
-
-Entrar al proyecto:
-
+```
+git clone https://github.com/Lesf0215X/real-time-collaboration-server.git
 cd real-time-collaboration-server
+```
 
 Instalar dependencias:
 
+```
 npm install
+```
 
 ---
 
-## Ejecutar en desarrollo
+# Ejecutar con Docker (recomendado)
 
+Iniciar todos los servicios:
+
+```
+docker compose up -d --build
+```
+
+Esto iniciará automáticamente:
+
+* Servidor Node.js
+* Base de datos PostgreSQL
+* Servidor Redis
+
+Verificar contenedores activos:
+
+```
+docker ps
+```
+
+---
+
+# Ejecutar sin Docker
+
+Debes tener **PostgreSQL y Redis instalados localmente**.
+
+Luego iniciar el servidor:
+
+```
 npm run dev
+```
 
-Servidor disponible en:
+o
 
-http://localhost:4000
-
----
-
-## Ejecutar con Docker
-
-Construir y levantar servicios:
-
-docker-compose up
-
-Esto iniciará:
-
-* Node server
-* PostgreSQL
-* Redis
+```
+npm start
+```
 
 ---
 
-## Eventos WebSocket
+# Endpoint HTTP
 
-### Conexión
+Para verificar que el servidor está funcionando:
 
-El cliente debe enviar el JWT en el handshake.
+```
+GET /
+```
 
-```javascript
+Respuesta esperada:
+
+```
+Real-Time Collaboration Server is running
+```
+
+---
+
+# Autenticación WebSocket
+
+Los clientes deben conectarse usando un **token JWT**.
+
+Ejemplo de payload del token:
+
+```
+{
+  "id": "user1"
+}
+```
+
+Ejemplo de conexión desde el cliente:
+
+```
 const socket = io("http://localhost:4000", {
   auth: {
-    token: JWT_TOKEN
+    token: "JWT_TOKEN"
   }
 })
 ```
 
 ---
 
-### Unirse a room
+# Eventos de Socket
+
+## Unirse a una sala
+
+Evento:
 
 ```
-socket.emit("join_room", "room1")
+join_room
+```
+
+Payload:
+
+```
+room
 ```
 
 ---
 
-### Enviar mensaje
+## Salir de una sala
+
+Evento:
 
 ```
-socket.emit("send_message", {
+leave_room
+```
+
+Payload:
+
+```
+room
+```
+
+---
+
+## Enviar mensaje
+
+Evento:
+
+```
+send_message
+```
+
+Payload:
+
+```
+{
   room: "room1",
-  message: "Hola mundo"
-})
+  message: "Hola"
+}
 ```
 
 ---
 
-### Escuchar mensajes
+## Recibir mensaje
+
+Evento:
 
 ```
-socket.on("receive_message", (data) => {
-  console.log(data)
-})
+receive_message
+```
+
+Retorna el mensaje guardado en la base de datos.
+
+---
+
+## Historial de mensajes
+
+Evento:
+
+```
+room_history
+```
+
+Devuelve los mensajes almacenados previamente en PostgreSQL.
+
+---
+
+## Indicador de escritura
+
+Evento:
+
+```
+typing
+```
+
+Notifica a otros usuarios de la sala que alguien está escribiendo.
+
+---
+
+## Usuarios conectados
+
+Evento:
+
+```
+online_users
+```
+
+Devuelve la lista de usuarios actualmente conectados.
+
+---
+
+# Esquema de base de datos
+
+Tabla de mensajes:
+
+```
+CREATE TABLE messages (
+  id SERIAL PRIMARY KEY,
+  user_id VARCHAR(255),
+  room VARCHAR(255),
+  message TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 ---
 
-### Usuarios online
+# Redis Adapter
+
+Redis se utiliza para permitir **escalabilidad horizontal** con múltiples instancias de Socket.IO.
+
+Esto permite que el servidor funcione en varios nodos mientras mantiene sincronización en tiempo real entre ellos.
+
+---
+
+# Desarrollo
+
+Ejecutar el servidor con recarga automática:
 
 ```
-socket.on("online_users", (users) => {
-  console.log(users)
-})
+npm run dev
 ```
 
 ---
 
-### Typing indicator
+# Producción
+
+Construir y ejecutar los contenedores:
 
 ```
-socket.emit("typing", "room1")
-```
-
----
-
-### Notificaciones
-
-```
-socket.on("notification", (data) => {
-  console.log(data)
-})
+docker compose up -d
 ```
 
 ---
 
-## Posibles mejoras
+# Autor
 
-* Rate limiting en eventos WebSocket
-* Persistencia de notificaciones
-* Sistema de permisos en rooms
-* Escalado horizontal con Kubernetes
-* Monitoring con Prometheus/Grafana
-
----
-
-## Autor
- Luis E. S. F.
+Luis E.S.F.

@@ -1,15 +1,15 @@
-import pkg from "pg"
+const { Pool } = require("pg");
 
-const { Pool } = pkg
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+});
 
-export const pool = new Pool({
-  host: "localhost",
-  port: 5432,
-  user: "postgres",
-  password: "postgres",
-  database: "realtime_chat"
-})
+pool.on("error", (err) => {
+  console.error("DB connection error:", err);
+});
 
-pool.connect()
-  .then(() => console.log("PostgreSQL connected"))
-  .catch(err => console.error("DB connection error:", err))
+module.exports = { pool };
