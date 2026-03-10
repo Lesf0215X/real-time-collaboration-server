@@ -74,12 +74,12 @@ Ejemplo:
 ```
 PORT=4000
 DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=realtime_chat
-REDIS_URL=redis://localhost:6379
-JWT_SECRET=supersecretaccess
+DB_PORT=1234
+DB_USER=postgree
+DB_PASSWORD=postgree
+DB_NAME=realtime
+REDIS_URL=redis://localhost:1234
+JWT_SECRET=accesssecret
 ```
 
 ---
